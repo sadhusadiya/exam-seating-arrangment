@@ -1,0 +1,64 @@
+document.getElementById('generateBtn').addEventListener('click', function() {
+  const rows = parseInt(document.getElementById('rows').value);
+  const columns = parseInt(document.getElementById('columns').value);
+  const peoplePerBench = parseInt(document.getElementById('people').value);
+  const departmentsInput = document.getElementById('departments').value;
+  const startRollNosInput = document.getElementById('startRollNos').value;
+  
+  const seatingContainer = document.getElementById('seatingArrangement');
+  seatingContainer.innerHTML = ''; // Clear previous arrangement
+
+  if (rows > 0 && columns > 0 && peoplePerBench > 0 && departmentsInput && startRollNosInput) {
+    const departments = departmentsInput.split(',').map(dept => dept.trim());
+    const startRollNos = startRollNosInput.split(',').map(roll => parseInt(roll.trim()));
+
+    if (departments.length !== startRollNos.length) {
+      seatingContainer.innerHTML = '<p>Please enter a valid starting roll number for each department.</p>';
+      return;
+    }
+
+    // Create an object to track the current roll number for each department
+    const rollNumbers = {};
+    departments.forEach((dept, index) => {
+      rollNumbers[dept] = startRollNos[index];
+    });
+
+    let previousDepartment = null;
+
+    for (let r = 1; r <= rows; r++) {
+      const rowDiv = document.createElement('div');
+      rowDiv.classList.add('row');
+      
+      for (let c = 1; c <= columns; c++) {
+        const benchDiv = document.createElement('div');
+        benchDiv.classList.add('bench');
+        
+        for (let p = 0; p < peoplePerBench; p++) {
+          // Find the next department that isn't the same as the previous one
+          let department;
+          do {
+            department = departments.shift(); // Remove the first element
+            departments.push(department); // Add it back at the end of the array
+          } while (department === previousDepartment);
+
+          previousDepartment = department;  // Update the last department
+
+          const rollNo = rollNumbers[department];  // Get the current roll number for the department
+
+          const personDiv = document.createElement('div');
+          personDiv.classList.add('person');
+          personDiv.textContent = `${department}-${rollNo}`;  // Display department and roll number
+
+          rollNumbers[department]++;  // Increment the roll number for the next student in the department
+          benchDiv.appendChild(personDiv);
+        }
+
+        rowDiv.appendChild(benchDiv);
+      }
+
+      seatingContainer.appendChild(rowDiv);
+    }
+  } else {
+    seatingContainer.innerHTML = '<p>Please enter valid numbers, departments, and roll numbers.</p>';
+  }
+});
